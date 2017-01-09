@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 @Data
-public class GrpcServer implements Managed {
+class GrpcServer implements Managed {
   private final AtomicReference<Optional<Server>> server = new AtomicReference<>(Optional.empty());
 
   private final GrpcEnvironment grpcEnvironment;
