@@ -7,6 +7,7 @@ import io.grpc.ServerBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -42,7 +43,7 @@ class GrpcServer implements Managed {
             (lifecycleListener, preStartException) -> log.warn("Caught exception while trying to call preServerStart on {}", lifecycleListener.getClass().getCanonicalName(), preStartException)
     ));
 
-    boolean serverStarted = startServer(port, serverBuilder);
+    boolean serverStarted = startServer(serverBuilder);
 
     if (serverStarted) {
       log.info("Started gRPC server listening on port {}", port);
@@ -73,7 +74,7 @@ class GrpcServer implements Managed {
     }
   }
 
-  private boolean startServer(int port, ServerBuilder<?> serverBuilder) {
+  private boolean startServer(ServerBuilder<?> serverBuilder) {
     try {
       Server grpcServer = serverBuilder.build().start();
       if (server.compareAndSet(Optional.empty(), Optional.of(grpcServer))) {
@@ -82,8 +83,8 @@ class GrpcServer implements Managed {
         log.warn("gRPC server already running on port {}", this.server.get().get().getPort());
         grpcServer.shutdownNow();
       }
-    } catch (Exception exception) {
-      log.warn("IOException while trying to start gRPC server on port {}", port, exception);
+    } catch (IOException exception) {
+      log.warn("IOException while trying to start gRPC server", exception);
     }
     return false;
   }
