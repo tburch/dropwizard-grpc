@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Created by tburch on 1/6/17.
@@ -35,28 +37,20 @@ class GrpcServer implements Managed {
     grpcEnvironment.getBindableServices().forEach(serverBuilder::addService);
 
     log.info("Starting gRPC server listening on port {}", port);
-
-    grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
-      try {
-        lifecycleListener.preServerStart();
-      } catch (Exception preStartException) {
-        log.warn("Caught exception while trying to call preServerStart on {}", lifecycleListener.getClass().getCanonicalName(), preStartException);
-      }
-    });
+    grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
+            GrpcServerLifecycleListener::preServerStart,
+            (lifecycleListener, preStartException) -> log.warn("Caught exception while trying to call preServerStart on {}", lifecycleListener.getClass().getCanonicalName(), preStartException)
+    ));
 
     boolean serverStarted = startServer(port, serverBuilder);
 
     if (serverStarted) {
       log.info("Started gRPC server listening on port {}", port);
-
-      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
-        try {
-          lifecycleListener.postServerStart();
-        } catch (Exception postStartException) {
-          log.warn("Caught exception while trying to call postServerStart on {}", lifecycleListener.getClass().getCanonicalName(), postStartException);
-        }
-      });
-  } else {
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
+              GrpcServerLifecycleListener::postServerStart,
+              (lifecycleListener, postStartException) -> log.warn("Caught exception while trying to call postServerStart on {}", lifecycleListener.getClass().getCanonicalName(), postStartException)
+      ));
+    } else {
       log.warn("Unable to start gRPC on port {}", port);
       throw new IllegalStateException("Unable to start gRPC server on port " + port);
     }
@@ -65,23 +59,17 @@ class GrpcServer implements Managed {
   @Override
   public void stop() throws Exception {
     if (server.get().isPresent()) {
-      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
-        try {
-          lifecycleListener.preServerStop();
-        } catch (Exception preStopException) {
-          log.warn("Caught exception while trying to call preServerStop on {}", lifecycleListener.getClass().getCanonicalName(), preStopException);
-        }
-      });
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
+              GrpcServerLifecycleListener::preServerStop,
+              (lifecycleListener, preStopException) -> log.warn("Caught exception while trying to call preServerStop on {}", lifecycleListener.getClass().getCanonicalName(), preStopException)
+      ));
 
       stopServer();
 
-      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
-        try {
-          lifecycleListener.postServerStop();
-        } catch (Exception postStopException) {
-          log.warn("Caught exception while trying to call postServerStop on {}", lifecycleListener.getClass().getCanonicalName(), postStopException);
-        }
-      });
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
+              GrpcServerLifecycleListener::postServerStop,
+              (lifecycleListener, postStopException) -> log.warn("Caught exception while trying to call postServerStop on {}", lifecycleListener.getClass().getCanonicalName(), postStopException)
+      ));
     }
   }
 
@@ -112,5 +100,15 @@ class GrpcServer implements Managed {
       log.warn("Caught Exception when trying to stop gRPC server on port {}", shutDownException, port);
     }
     return false;
+  }
+
+  private static Consumer<GrpcServerLifecycleListener> throwableCatchingConsumer(Consumer<GrpcServerLifecycleListener> worker, BiConsumer<GrpcServerLifecycleListener, Throwable> throwableWorker) {
+    return work -> {
+      try {
+        worker.accept(work);
+      } catch (Throwable t) {
+        throwableWorker.accept(work, t);
+      }
+    };
   }
 }
