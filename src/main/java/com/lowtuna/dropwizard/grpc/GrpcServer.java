@@ -91,14 +91,16 @@ class GrpcServer implements Managed {
 
   private boolean stopServer() {
     int port = connectorConfiguration.getPort();
-    Server gRpcServer = server.get().get();
-    try {
-      log.info("Stopping gRPC server on port {}", port);
-      gRpcServer.shutdown();
-      log.info("Stopped gRPC server on port {}", port);
-      return true;
-    } catch (Exception shutDownException) {
-      log.warn("Caught Exception when trying to stop gRPC server on port {}", shutDownException, port);
+    if (server.get().isPresent()) {
+      Server gRpcServer = server.get().get();
+      try {
+        log.info("Stopping gRPC server on port {}", port);
+        gRpcServer.shutdown();
+        log.info("Stopped gRPC server on port {}", port);
+        return true;
+      } catch (Exception shutDownException) {
+        log.warn("Caught Exception when trying to stop gRPC server on port {}", shutDownException, port);
+      }
     }
     return false;
   }
