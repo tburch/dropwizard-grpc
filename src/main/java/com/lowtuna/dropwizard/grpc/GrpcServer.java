@@ -52,7 +52,7 @@ class GrpcServer implements Managed {
               (lifecycleListener, postStartException) -> log.warn("Caught exception while trying to call postServerStart on {}", lifecycleListener.getClass().getCanonicalName(), postStartException)
       ));
     } else {
-      log.warn("Unable to start gRPC on port {}", port);
+      log.warn("Unable to start gRPC server on port {}", port);
       throw new IllegalStateException("Unable to start gRPC server on port " + port);
     }
   }
