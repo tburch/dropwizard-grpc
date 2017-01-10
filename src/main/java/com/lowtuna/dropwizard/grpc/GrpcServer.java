@@ -7,7 +7,6 @@ import io.grpc.ServerBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,41 +36,27 @@ class GrpcServer implements Managed {
 
     log.info("Starting gRPC server listening on port {}", port);
 
-    for (GrpcServerLifecycleListener eventListener : grpcEnvironment.getLifecycleEvents()) {
+    grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
       try {
-        eventListener.preServerStart();
+        lifecycleListener.preServerStart();
       } catch (Exception preStartException) {
-        log.warn("Caught exception while trying to call preServerStart on {}", eventListener.getClass().getCanonicalName(), preStartException);
+        log.warn("Caught exception while trying to call preServerStart on {}", lifecycleListener.getClass().getCanonicalName(), preStartException);
       }
-    }
+    });
 
-    Optional<Server> serverOptional = Optional.empty();
-    try {
-      Server server = serverBuilder.build().start();
-      serverOptional = Optional.of(server);
-      boolean set = this.server.compareAndSet(Optional.empty(), serverOptional);
-      if (!set) {
-        log.warn("gRPC server already running on port {}", this.server.get().get().getPort());
-        try {
-          server.shutdownNow();
-        } finally {
-          serverOptional = Optional.empty();
-        }
-      }
-    } catch (IOException serverStartException) {
-      log.warn("IOException while trying to start gRPC server on port {}", port, serverStartException);
-    }
+    boolean serverStarted = startServer(port, serverBuilder);
 
-    if (serverOptional.isPresent()) {
+    if (serverStarted) {
       log.info("Started gRPC server listening on port {}", port);
-      for (GrpcServerLifecycleListener eventListener : grpcEnvironment.getLifecycleEvents()) {
+
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
         try {
-          eventListener.postServerStart();
+          lifecycleListener.postServerStart();
         } catch (Exception postStartException) {
-          log.warn("Caught exception while trying to call postServerStart on {}", eventListener.getClass().getCanonicalName(), postStartException);
+          log.warn("Caught exception while trying to call postServerStart on {}", lifecycleListener.getClass().getCanonicalName(), postStartException);
         }
-      }
-    } else {
+      });
+  } else {
       log.warn("Unable to start gRPC on port {}", port);
       throw new IllegalStateException("Unable to start gRPC server on port " + port);
     }
@@ -79,33 +64,53 @@ class GrpcServer implements Managed {
 
   @Override
   public void stop() throws Exception {
-    int port = connectorConfiguration.getPort();
-
     if (server.get().isPresent()) {
-      Server gRpcServer = server.get().get();
-      for (GrpcServerLifecycleListener eventListener : grpcEnvironment.getLifecycleEvents()) {
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
         try {
-          eventListener.preServerStop();
+          lifecycleListener.preServerStop();
         } catch (Exception preStopException) {
-          log.warn("Caught exception while trying to call preServerStop on {}", eventListener.getClass().getCanonicalName(), preStopException);
+          log.warn("Caught exception while trying to call preServerStop on {}", lifecycleListener.getClass().getCanonicalName(), preStopException);
         }
-      }
+      });
 
-      try {
-        log.info("Stopping gRPC server on port {}", port);
-        gRpcServer.shutdown();
-        log.info("Stopped gRPC server on port {}", port);
-      } catch (Exception shutDownException) {
-        log.warn("Caught Exception when trying to stop gRPC server on port {}", shutDownException, port);
-      }
+      stopServer();
 
-      for (GrpcServerLifecycleListener eventListener : grpcEnvironment.getLifecycleEvents()) {
+      grpcEnvironment.getLifecycleEvents().parallelStream().forEach(lifecycleListener -> {
         try {
-          eventListener.postServerStop();
+          lifecycleListener.postServerStop();
         } catch (Exception postStopException) {
-          log.warn("Caught exception while trying to call postServerStop on {}", eventListener.getClass().getCanonicalName(), postStopException);
+          log.warn("Caught exception while trying to call postServerStop on {}", lifecycleListener.getClass().getCanonicalName(), postStopException);
         }
-      }
+      });
     }
+  }
+
+  private boolean startServer(int port, ServerBuilder<?> serverBuilder) {
+    try {
+      Server grpcServer = serverBuilder.build().start();
+      if (server.compareAndSet(Optional.empty(), Optional.of(grpcServer))) {
+        return true;
+      } else {
+        log.warn("gRPC server already running on port {}", this.server.get().get().getPort());
+        grpcServer.shutdownNow();
+      }
+    } catch (Exception exception) {
+      log.warn("IOException while trying to start gRPC server on port {}", port, exception);
+    }
+    return false;
+  }
+
+  private boolean stopServer() {
+    int port = connectorConfiguration.getPort();
+    Server gRpcServer = server.get().get();
+    try {
+      log.info("Stopping gRPC server on port {}", port);
+      gRpcServer.shutdown();
+      log.info("Stopped gRPC server on port {}", port);
+      return true;
+    } catch (Exception shutDownException) {
+      log.warn("Caught Exception when trying to stop gRPC server on port {}", shutDownException, port);
+    }
+    return false;
   }
 }
