@@ -20,7 +20,6 @@
   <modules>
     <module>dropwizard-grpc-core</module>
     <module>dropwizard-grpc-example</module>
-    <module>dropwizard-grpc-testing</module>
   </modules>
 
   <properties>

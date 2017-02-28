@@ -5,6 +5,7 @@ import com.lowtuna.dropwizard.grpc.examples.helloworld.HelloReply;
 import com.lowtuna.dropwizard.grpc.examples.helloworld.HelloRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -30,8 +31,16 @@ public class GreeterClient {
     HelloRequest helloRequest = HelloRequest.newBuilder()
             .setName(name)
             .build();
+    log.info("Sending HelloRequest with name {}", name);
     HelloReply helloReply = greeterClient.sayHello(helloRequest);
-    log.info("Reply message: {}", helloReply.getMessage());
+    log.info("Got HelloReply with message: {}", helloReply.getMessage());
+
+    log.info("Sending HelloRequest with no name");
+    try {
+      greeterClient.sayHello(HelloRequest.newBuilder().build());
+    } catch (StatusRuntimeException e) {
+      log.info("Caught StatusRuntimeException with status {} and message", e.getStatus(), e.getMessage());
+    }
   }
 
 }
