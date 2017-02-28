@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 Tristan Burch.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.lowtuna.dropwizard.grpc;
 
 import io.dropwizard.Configuration;
@@ -10,9 +25,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 
-/**
- * Created by tburch on 1/6/17.
- */
 @Slf4j
 public class GrpcServerCommand<T extends Configuration> extends EnvironmentCommand<T> {
   private final GrpcApplication<T> application;
@@ -30,6 +42,7 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
   protected void run(Environment environment, Namespace namespace, T configuration) throws Exception {
     GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder = GrpcEnvironment.builder();
 
+    log.info("Running application {}", application.getClass().getName());
     application.run(configuration, environment, grpcEnvironmentBuilder);
 
     GrpcEnvironment grpcEnvironment = grpcEnvironmentBuilder.build();
@@ -49,17 +62,17 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
         try {
           server.stop();
         } catch (Exception stopException) {
-          log.warn("Failure while stopping gRPC server", stopException);
+          log.warn("Failure while stopping gRPC server after unsuccessful start", stopException);
         }
         try {
           cleanup();
         } catch (Exception cleanupException) {
-          log.warn("Failure during cleanup", cleanupException);
+          log.warn("Failure during cleanup after unsuccessful start", cleanupException);
         }
         throw startException;
       }
     } else {
-      log.error("ServerFactory is not an instance of GrpcServerFactory, thus cannot start gRPC server");
+      log.error("ServerFactory is not an instance of GrpcServerFactory therefore cannot start gRPC server");
       throw new IllegalArgumentException("ServerFactory is not an instance of GrpcServerFactory");
     }
   }

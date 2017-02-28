@@ -1,0 +1,7 @@
+---
+server:
+  type: gRPC
+  applicationConnector:
+    port: 9000
+  adminConnectors: []
+name: Low Tuna
