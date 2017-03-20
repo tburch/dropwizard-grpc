@@ -26,6 +26,7 @@ import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
 public class GrpcServerCommand<T extends Configuration> extends EnvironmentCommand<T> {
@@ -42,9 +43,11 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
 
   @Override
   protected void run(Environment environment, Namespace namespace, T configuration) throws Exception {
+    int maxThreads = 64;
     ExecutorService executorService = environment.lifecycle()
             .executorService("gRPC-executor-service")
-            .maxThreads(256)
+            .maxThreads(maxThreads)
+            .workQueue(new LinkedBlockingQueue<>(maxThreads))
             .build();
     GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder = GrpcEnvironment.builder().executorService(executorService);
 
