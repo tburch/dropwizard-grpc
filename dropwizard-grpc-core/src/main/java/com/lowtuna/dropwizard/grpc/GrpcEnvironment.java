@@ -22,9 +22,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
 
+import javax.validation.constraints.NotNull;
+import java.util.concurrent.ExecutorService;
+
 @Data
 @Builder
 public class GrpcEnvironment {
+  @NotNull
+  private final ExecutorService executorService;
   @Singular
   private final ImmutableSet<ServerServiceDefinition> serverServiceDefinitions;
   @Singular

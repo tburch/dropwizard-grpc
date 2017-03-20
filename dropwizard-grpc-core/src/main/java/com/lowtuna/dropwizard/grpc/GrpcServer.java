@@ -16,7 +16,6 @@
 package com.lowtuna.dropwizard.grpc;
 
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import lombok.Data;
@@ -34,7 +33,6 @@ class GrpcServer implements Managed {
   private final AtomicReference<Optional<Server>> server = new AtomicReference<>(Optional.empty());
 
   private final GrpcEnvironment grpcEnvironment;
-  private final Environment environment;
   private final GrpcConnectorConfiguration connectorConfiguration;
 
   @Override
@@ -42,7 +40,7 @@ class GrpcServer implements Managed {
     int port = connectorConfiguration.getPort();
 
     ServerBuilder<?> serverBuilder = ServerBuilder.forPort(port);
-    serverBuilder.executor(environment.lifecycle().executorService("gRPC").build());
+    serverBuilder.executor(grpcEnvironment.getExecutorService());
 
     log.debug("Adding {} ServerServiceDefinitions...", grpcEnvironment.getServerServiceDefinitions().size());
     grpcEnvironment.getServerServiceDefinitions().forEach(serverBuilder::addService);

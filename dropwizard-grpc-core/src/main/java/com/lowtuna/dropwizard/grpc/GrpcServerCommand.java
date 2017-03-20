@@ -25,6 +25,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 
+import java.util.concurrent.ExecutorService;
+
 @Slf4j
 public class GrpcServerCommand<T extends Configuration> extends EnvironmentCommand<T> {
   private final GrpcApplication<T> application;
@@ -40,7 +42,11 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
 
   @Override
   protected void run(Environment environment, Namespace namespace, T configuration) throws Exception {
-    GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder = GrpcEnvironment.builder();
+    ExecutorService executorService = environment.lifecycle()
+            .executorService("gRPC-executor-service")
+            .maxThreads(256)
+            .build();
+    GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder = GrpcEnvironment.builder().executorService(executorService);
 
     log.info("Running application {}", application.getClass().getName());
     application.run(configuration, environment, grpcEnvironmentBuilder);
@@ -49,7 +55,7 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
     if (configuration.getServerFactory() instanceof GrpcServerFactory) {
       GrpcServerFactory grpcServerFactory = (GrpcServerFactory) configuration.getServerFactory();
 
-      GrpcServer grpcServer = new GrpcServer(grpcEnvironment, environment, grpcServerFactory.getApplicationConnector());
+      GrpcServer grpcServer = new GrpcServer(grpcEnvironment, grpcServerFactory.getApplicationConnector());
       environment.lifecycle().manage(grpcServer);
 
       Server server = grpcServerFactory.build(environment);
