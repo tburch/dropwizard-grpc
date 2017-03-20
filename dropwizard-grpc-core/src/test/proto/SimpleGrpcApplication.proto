@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.lowtuna.dropwizard.grpc";
+
+package simple;
+
+service FooService {
+    rpc DoFoo (FooRequest) returns (FooResponse) {}
+}
+
+message FooRequest {
+    string bar = 1;
+}
+
+message FooResponse {
+    string baz = 1;
+}
