@@ -18,9 +18,12 @@
       <artifactId>dropwizard-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-validation</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.16.12</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -40,6 +43,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-metrics</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
       <scope>test</scope>
@@ -47,6 +55,11 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.lowtuna.dropwizard.grpc</groupId>
+      <artifactId>dropwizard-grpc-metrics</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -67,7 +80,7 @@
         <configuration>
           <protocArtifact>com.google.protobuf:protoc:3.2.0:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${dep.grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${dep.io.grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
           <goal>compile</goal>
         </configuration>
         <executions>

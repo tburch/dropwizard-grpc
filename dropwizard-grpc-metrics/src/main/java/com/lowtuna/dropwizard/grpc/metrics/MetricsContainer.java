@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lowtuna.dropwizard.grpc;
+package com.lowtuna.dropwizard.grpc.metrics;
 
-public interface GrpcServerLifecycleListener {
-    /**
-     * Called before the gRPC server is started.
-     */
-    void preServerStart();
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
+import com.google.common.cache.LoadingCache;
+import io.grpc.Status;
+import lombok.Builder;
+import lombok.Data;
 
-    /**
-     * Called after the gRPC server has been started. This will only be called if the server successfully starts.
-     */
-    void postServerStart();
-
-    /**
-     * Called before the gRPC server is stopped.
-     */
-    void preServerStop();
-
-    /**
-     * Called after the gRPC server has been stopped.
-     */
-    void postServerStop();
+@Data
+@Builder
+public class MetricsContainer {
+    private final Counter activeCallsCounter;
+    private final Timer responseTimer;
+    private final Meter streamMessagesSentMeter;
+    private final Meter streamMessagesReceivedMeter;
+    private final LoadingCache<Status, Meter> statusMeters;
 }

@@ -5,6 +5,7 @@ import com.google.common.io.Resources;
 import com.lowtuna.dropwizard.grpc.GrpcApplication;
 import com.lowtuna.dropwizard.grpc.GrpcEnvironment;
 import com.lowtuna.dropwizard.grpc.examples.helloworld.GreeterGrpc;
+import com.lowtuna.dropwizard.grpc.metrics.MetricsInterceptor;
 import io.dropwizard.setup.Environment;
 
 import java.io.File;
@@ -32,6 +33,7 @@ public class HelloWorldGrpcApplication extends GrpcApplication<HelloWorldConfigu
   public void run(HelloWorldConfiguration configuration, Environment environment, GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder) throws Exception {
     GreeterGrpc.GreeterImplBase greeterService = new GreeterServiceImpl(configuration.getName());
     grpcEnvironmentBuilder.bindableService(greeterService);
+    grpcEnvironmentBuilder.interceptor(new MetricsInterceptor(environment.metrics()));
   }
 
 }

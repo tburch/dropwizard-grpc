@@ -19,12 +19,15 @@
 
   <modules>
     <module>dropwizard-grpc-core</module>
+    <module>dropwizard-grpc-metrics</module>
     <module>dropwizard-grpc-example</module>
   </modules>
 
   <properties>
-    <dep.dropwizard.version>1.1.2</dep.dropwizard.version>
-    <dep.grpc.version>1.5.0</dep.grpc.version>
+    <dep.io.dropwizard.version>1.1.2</dep.io.dropwizard.version>
+    <dep.io.grpc.version>1.5.0</dep.io.grpc.version>
+    <dep.io.dropwizard.metrics.version>3.2.3</dep.io.dropwizard.metrics.version>
+    <dep.org.projectlombok.version>1.16.18</dep.org.projectlombok.version>
   </properties>
 
   <dependencyManagement>
@@ -34,32 +37,47 @@
         <artifactId>dropwizard-grpc-core</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.lowtuna.dropwizard.grpc</groupId>
+        <artifactId>dropwizard-grpc-metrics</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>io.dropwizard</groupId>
-        <artifactId>dropwizard-core</artifactId>
-        <version>${dep.dropwizard.version}</version>
+        <artifactId>dropwizard-bom</artifactId>
+        <version>${dep.io.dropwizard.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
+
       <dependency>
-        <groupId>io.dropwizard</groupId>
-        <artifactId>dropwizard-testing</artifactId>
-        <version>${dep.dropwizard.version}</version>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>${dep.io.dropwizard.metrics.version}</version>
       </dependency>
 
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-netty</artifactId>
-        <version>${dep.grpc.version}</version>
+        <version>${dep.io.grpc.version}</version>
       </dependency>
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-protobuf</artifactId>
-        <version>${dep.grpc.version}</version>
+        <version>${dep.io.grpc.version}</version>
       </dependency>
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
-        <version>${dep.grpc.version}</version>
+        <version>${dep.io.grpc.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${dep.org.projectlombok.version}</version>
+        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

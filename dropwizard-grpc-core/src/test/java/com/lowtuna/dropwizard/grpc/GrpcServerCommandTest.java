@@ -56,9 +56,12 @@ public class GrpcServerCommandTest {
   }
 
   @Test
-  public void bar() {
+  public void bar() throws InterruptedException {
     FooRequest request = FooRequest.newBuilder().setBar("123").build();
     FooResponse response = fooService.doFoo(request);
     Assert.assertTrue(response.getBaz().contains("123"));
+
+    //sleep so we can log some metrics to the console.
+    Thread.sleep(999);
   }
 }
