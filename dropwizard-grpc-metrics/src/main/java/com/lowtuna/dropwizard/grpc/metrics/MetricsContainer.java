@@ -25,7 +25,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MetricsContainer {
+class MetricsContainer {
     private final Counter activeCallsCounter;
     private final Timer responseTimer;
     private final Meter streamMessagesSentMeter;
