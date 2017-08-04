@@ -6,13 +6,7 @@ The gRPC server replaces the standard Jetty/Jersey application container normall
 
 Dependency Info
 ---------------
-```xml
-<dependency>
-    <groupId>com.lowtuna.dropwizard.grpc</groupId>
-    <artifactId>dropwizard-grpc-core</artifactId>
-    <version>1.0.6-1</version>
-</dependency>
-```
+`Dependecy info here...`
 
 Usage
 -----
