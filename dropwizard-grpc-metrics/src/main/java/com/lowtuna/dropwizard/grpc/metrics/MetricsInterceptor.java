@@ -47,7 +47,7 @@ public class MetricsInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         MethodDescriptor.MethodType methodType = call.getMethodDescriptor().getType();
-        ServerCall<ReqT, RespT> monitoringCall = new InstrumentedServerCall<>(call, methodType, metricsContainer);
-        return new InstrumentedServerCallListener<>(next.startCall(monitoringCall, headers), methodType, metricsContainer);
+        ServerCall<ReqT, RespT> instrumentedServerCall = new InstrumentedServerCall<>(call, methodType, metricsContainer);
+        return new InstrumentedServerCallListener<>(next.startCall(instrumentedServerCall, headers), methodType, metricsContainer);
     }
 }
