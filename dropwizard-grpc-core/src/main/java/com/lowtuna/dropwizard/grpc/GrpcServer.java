@@ -16,6 +16,7 @@
 package com.lowtuna.dropwizard.grpc;
 
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.setup.Environment;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import lombok.Data;
@@ -34,6 +35,7 @@ class GrpcServer implements Managed {
     private final AtomicReference<Optional<Server>> server = new AtomicReference<>(Optional.empty());
 
     private final GrpcEnvironment grpcEnvironment;
+    private final Environment dropwizardEnvironment;
     private final GrpcConnectorConfiguration connectorConfiguration;
 
     @Override
@@ -81,6 +83,9 @@ class GrpcServer implements Managed {
             log.debug("Enabling TLS");
             serverBuilder.useTransportSecurity(grpcEnvironment.getTlsCertAndPrivateKey().getLeft(), grpcEnvironment.getTlsCertAndPrivateKey().getRight());
         }
+
+        DropwizardHealthCheckService healthCheckService = new DropwizardHealthCheckService(dropwizardEnvironment.healthChecks(), server);
+        serverBuilder.addService(healthCheckService);
 
         log.info("Starting gRPC server listening on port {}", port);
         grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(

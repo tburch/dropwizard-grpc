@@ -72,6 +72,11 @@
         <artifactId>grpc-stub</artifactId>
         <version>${dep.io.grpc.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-services</artifactId>
+        <version>${dep.io.grpc.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.projectlombok</groupId>

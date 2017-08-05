@@ -1,11 +1,14 @@
 package com.lowtuna.dropwizard.grpc;
 
-
 import io.dropwizard.cli.Command;
 import io.dropwizard.server.ServerFactory;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.health.v1.HealthCheckRequest;
+import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.HealthGrpc;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -46,6 +49,7 @@ public class GrpcServerCommandTest {
   );
 
   private FooServiceGrpc.FooServiceBlockingStub fooService;
+  private HealthGrpc.HealthBlockingStub healthService;
 
   @Before
   public void setupFoodService() {
@@ -53,15 +57,53 @@ public class GrpcServerCommandTest {
             .usePlaintext(true)
             .build();
     this.fooService = FooServiceGrpc.newBlockingStub(channel);
+    this.healthService = HealthGrpc.newBlockingStub(channel);
   }
 
   @Test
-  public void bar() throws InterruptedException {
+  public void testFooService() throws InterruptedException {
     FooRequest request = FooRequest.newBuilder().setBar("123").build();
     FooResponse response = fooService.doFoo(request);
     Assert.assertTrue(response.getBaz().contains("123"));
+  }
 
-    //sleep so we can log some metrics to the console.
-    Thread.sleep(999);
+  @Test
+  public void testHealthCheckWithNoService() {
+    TestGrpcApplication app = APP_RULE.getApplication();
+    app.getFailHealthCheck().set(false);
+
+    HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(StringUtils.EMPTY).build();
+    HealthCheckResponse response = healthService.check(request);
+    Assert.assertEquals(HealthCheckResponse.ServingStatus.SERVING, response.getStatus());
+  }
+
+  @Test
+  public void testHealthCheckWithValidService() {
+    TestGrpcApplication app = APP_RULE.getApplication();
+    app.getFailHealthCheck().set(false);
+
+    HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(FooServiceGrpc.SERVICE_NAME).build();
+    HealthCheckResponse response = healthService.check(request);
+    Assert.assertEquals(HealthCheckResponse.ServingStatus.SERVING, response.getStatus());
+  }
+
+  @Test
+  public void testHealthCheckWithInvalidService() {
+    TestGrpcApplication app = APP_RULE.getApplication();
+    app.getFailHealthCheck().set(false);
+
+    HealthCheckRequest request = HealthCheckRequest.newBuilder().setService("xyz." + FooServiceGrpc.SERVICE_NAME).build();
+    HealthCheckResponse response = healthService.check(request);
+    Assert.assertEquals(HealthCheckResponse.ServingStatus.UNKNOWN, response.getStatus());
+  }
+
+  @Test
+  public void testHealthCheckWithNoServiceFailingHealthCheck() {
+    TestGrpcApplication app = APP_RULE.getApplication();
+    app.getFailHealthCheck().set(true);
+
+    HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(StringUtils.EMPTY).build();
+    HealthCheckResponse response = healthService.check(request);
+    Assert.assertEquals(HealthCheckResponse.ServingStatus.NOT_SERVING, response.getStatus());
   }
 }
