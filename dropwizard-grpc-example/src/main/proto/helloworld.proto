@@ -1,10 +1,10 @@
 syntax = "proto3";
 
+package com.lowtuna.dropwizard.grpc.example;
+
 option java_multiple_files = true;
 option java_package = "com.lowtuna.dropwizard.grpc.examples.helloworld";
 option java_outer_classname = "HelloWorldProto";
-
-package helloworld;
 
 // The greeting service definition.
 service Greeter {
