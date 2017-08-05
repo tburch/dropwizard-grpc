@@ -96,6 +96,13 @@ class GrpcServer implements Managed {
         boolean serverStarted = startServer(serverBuilder);
 
         if (serverStarted) {
+            StringBuilder sb = new StringBuilder(GrpcEnvironment.class.getCanonicalName() + ": gRPC services =");
+            sb.append(System.lineSeparator());
+            sb.append(System.lineSeparator());
+            server.get().get().getServices().forEach(ssd -> {
+                sb.append(String.format("    %-7s%n", ssd.getServiceDescriptor().getName()));
+            });
+            log.info(sb.toString());
             log.info("Started gRPC server listening on port {}", port);
             grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
                     GrpcServerLifecycleListener::postServerStart,
