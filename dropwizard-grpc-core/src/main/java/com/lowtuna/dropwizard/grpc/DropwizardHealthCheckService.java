@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -21,6 +23,8 @@ class DropwizardHealthCheckService extends HealthGrpc.HealthImplBase {
 
     private final HealthCheckRegistry healthCheckRegistry;
     private final AtomicReference<Optional<Server>> server;
+
+    private final ExecutorService healthCheckExecutorService = Executors.newCachedThreadPool();
 
     @Override
     public void check(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
@@ -34,7 +38,7 @@ class DropwizardHealthCheckService extends HealthGrpc.HealthImplBase {
         }
 
         if (matchedServiceName) {
-            Map<String, HealthCheck.Result> healthCheckResults = healthCheckRegistry.runHealthChecks();
+            Map<String, HealthCheck.Result> healthCheckResults = healthCheckRegistry.runHealthChecks(healthCheckExecutorService);
             boolean allPassed = healthCheckResults.values().parallelStream().filter(HealthCheck.Result::isHealthy).count() == healthCheckResults.values().size();
             servingStatus = allPassed ? HealthCheckResponse.ServingStatus.SERVING : HealthCheckResponse.ServingStatus.NOT_SERVING;
         }
