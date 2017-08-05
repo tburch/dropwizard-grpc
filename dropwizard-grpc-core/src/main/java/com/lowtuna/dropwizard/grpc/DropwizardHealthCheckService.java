@@ -30,7 +30,6 @@ class DropwizardHealthCheckService extends HealthGrpc.HealthImplBase {
         if (!server.get().isPresent()) {
             servingStatus = HealthCheckResponse.ServingStatus.NOT_SERVING;
         } else if (!matchedServiceName) {
-            //look through es
             matchedServiceName = server.get().get().getServices().parallelStream().filter((Predicate<ServerServiceDefinition>) input -> input.getServiceDescriptor().getName().equals(serviceName)).count() == 1;
         }
 
