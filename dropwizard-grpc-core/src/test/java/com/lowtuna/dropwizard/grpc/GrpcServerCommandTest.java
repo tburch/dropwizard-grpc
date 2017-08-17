@@ -1,6 +1,10 @@
 package com.lowtuna.dropwizard.grpc;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.dropwizard.cli.Command;
+import io.dropwizard.logging.ConsoleAppenderFactory;
+import io.dropwizard.logging.DefaultLoggingFactory;
+import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.server.ServerFactory;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import io.grpc.ManagedChannel;
@@ -14,6 +18,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 /**
@@ -29,10 +34,18 @@ public class GrpcServerCommandTest {
     grpcServerFactory.setApplicationConnector(connectorConfiguration);
     SERVER_FACTORY =  grpcServerFactory;
   }
+
   private static final TestGrpcApplicationConfiguration CONFIG;
   static {
     TestGrpcApplicationConfiguration configuration = new TestGrpcApplicationConfiguration();
     configuration.setServerFactory(SERVER_FACTORY);
+
+    DefaultLoggingFactory loggingFactory = new DefaultLoggingFactory();
+    ConsoleAppenderFactory<ILoggingEvent> consoleAppenderFactory = new ConsoleAppenderFactory<>();
+    consoleAppenderFactory.setLogFormat("%-5p [%d{ISO8601}] [%thread] [%X{requestId}] %c{5}: %m%n%xEx");
+    loggingFactory.setAppenders(Collections.singletonList(consoleAppenderFactory));
+    configuration.setLoggingFactory(loggingFactory);
+
     CONFIG = configuration;
   }
 
@@ -52,7 +65,7 @@ public class GrpcServerCommandTest {
   private HealthGrpc.HealthBlockingStub healthService;
 
   @Before
-  public void setupFoodService() {
+  public void setupServices() {
     ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", GRPC_PORT)
             .usePlaintext(true)
             .build();

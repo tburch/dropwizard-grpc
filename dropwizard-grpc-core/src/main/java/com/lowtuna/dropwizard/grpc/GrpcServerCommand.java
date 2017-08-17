@@ -45,7 +45,7 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
     protected void run(Environment environment, Namespace namespace, T configuration) throws Exception {
         int maxThreads = 64;
         ExecutorService executorService = environment.lifecycle()
-                .executorService("gRPC-executor-service")
+                .executorService("gRPC-executor-service-%d")
                 .maxThreads(maxThreads)
                 .workQueue(new LinkedBlockingQueue<>(maxThreads))
                 .build();
