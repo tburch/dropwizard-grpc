@@ -54,10 +54,9 @@ public class GrpcServerCommand<T extends Configuration> extends EnvironmentComma
         log.info("Running application {}", application.getClass().getName());
         application.run(configuration, environment, grpcEnvironmentBuilder);
 
-        GrpcEnvironment grpcEnvironment = grpcEnvironmentBuilder.build();
         if (configuration.getServerFactory() instanceof GrpcServerFactory) {
             GrpcServerFactory grpcServerFactory = (GrpcServerFactory) configuration.getServerFactory();
-
+            GrpcEnvironment grpcEnvironment = grpcEnvironmentBuilder.build();
             GrpcServer grpcServer = new GrpcServer(grpcEnvironment, environment, grpcServerFactory.getApplicationConnector());
             environment.lifecycle().manage(grpcServer);
 

@@ -87,7 +87,7 @@ class GrpcServer implements Managed {
         DropwizardHealthCheckService healthCheckService = new DropwizardHealthCheckService(dropwizardEnvironment.healthChecks(), server);
         serverBuilder.addService(healthCheckService);
 
-        log.info("Starting gRPC server listening on port {}", port);
+        log.info("Starting gRPC server on port {}", port);
         grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
                 GrpcServerLifecycleListener::preServerStart,
                 (lifecycleListener, preStartException) -> log.warn("Caught exception while trying to call preServerStart on {}", lifecycleListener.getClass().getCanonicalName(), preStartException)
@@ -103,7 +103,7 @@ class GrpcServer implements Managed {
                 sb.append(String.format("    %-7s%n", ssd.getServiceDescriptor().getName()));
             });
             log.info(sb.toString());
-            log.info("Started gRPC server listening on port {}", port);
+            log.info("Started gRPC server on port {}", port);
             grpcEnvironment.getLifecycleEvents().parallelStream().forEach(throwableCatchingConsumer(
                     GrpcServerLifecycleListener::postServerStart,
                     (lifecycleListener, postStartException) -> log.warn("Caught exception while trying to call postServerStart on {}", lifecycleListener.getClass().getCanonicalName(), postStartException)
