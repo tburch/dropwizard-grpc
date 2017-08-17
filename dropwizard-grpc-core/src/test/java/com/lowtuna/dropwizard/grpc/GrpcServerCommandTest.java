@@ -42,7 +42,7 @@ public class GrpcServerCommandTest {
 
     DefaultLoggingFactory loggingFactory = new DefaultLoggingFactory();
     ConsoleAppenderFactory<ILoggingEvent> consoleAppenderFactory = new ConsoleAppenderFactory<>();
-    consoleAppenderFactory.setLogFormat("%-5p [%d{ISO8601}] [%thread] [%X{requestId}] %c{5}: %m%n%xEx");
+    consoleAppenderFactory.setLogFormat("%-5p [%d{ISO8601}] [%thread] %c{5}: %m%n%xEx");
     loggingFactory.setAppenders(Collections.singletonList(consoleAppenderFactory));
     configuration.setLoggingFactory(loggingFactory);
 
