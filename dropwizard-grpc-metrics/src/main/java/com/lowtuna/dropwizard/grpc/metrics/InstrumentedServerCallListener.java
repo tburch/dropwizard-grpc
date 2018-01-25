@@ -44,9 +44,7 @@ public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallLi
 
     @Override
     public void onMessage(ReqT request) {
-        if (!methodDescriptor.getType().clientSendsOneMessage()) {
-            serverMetrics.markMessageReceived(methodDescriptor);
-        }
+        serverMetrics.markMessageReceived(methodDescriptor);
         super.onMessage(request);
     }
 
