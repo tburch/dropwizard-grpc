@@ -53,21 +53,21 @@ public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallLi
 
     @Override
     public void onComplete() {
+        serverMetrics.decActiveRequests();
         super.onComplete();
         if (Objects.nonNull(start)) {
             Duration elapsed = Duration.between(start, Instant.now());
             serverMetrics.markMessageComplete(elapsed, methodDescriptor);
         }
-        serverMetrics.decActiveRequests();
     }
 
     @Override
     public void onCancel() {
+        serverMetrics.decActiveRequests();
         super.onCancel();
         if (Objects.nonNull(start)) {
             Duration elapsed = Duration.between(start, Instant.now());
             serverMetrics.markMessageCanceled(elapsed, methodDescriptor);
         }
-        serverMetrics.decActiveRequests();
     }
 }

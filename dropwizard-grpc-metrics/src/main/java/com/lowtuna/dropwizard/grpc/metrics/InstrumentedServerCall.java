@@ -36,8 +36,8 @@ public class InstrumentedServerCall<ReqT, RespT> extends ForwardingServerCall.Si
 
     @Override
     public void close(Status status, Metadata responseHeaders) {
-        super.close(status, responseHeaders);
         serverMetrics.callClosed(status, methodDescriptor);
+        super.close(status, responseHeaders);
     }
 
     @Override
