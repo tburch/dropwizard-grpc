@@ -21,26 +21,24 @@ import io.grpc.ServerCall;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
     private final MethodDescriptor methodDescriptor;
     private final ServerMetrics serverMetrics;
 
-    private Instant start;
+    private final AtomicReference<Instant> start = new AtomicReference<>();
 
     InstrumentedServerCallListener(ServerCall.Listener<ReqT> delegate, MethodDescriptor methodDescriptor, ServerMetrics serverMetrics) {
-       super(delegate);
+        super(delegate);
         this.methodDescriptor = methodDescriptor;
         this.serverMetrics = serverMetrics;
     }
 
     @Override
     public void onReady() {
-        if (Objects.isNull(start)) {
-            start = Instant.now();
-            serverMetrics.incActiveRequests();
-        }
+        start.compareAndSet(null, Instant.now());
+        serverMetrics.incActiveRequests();
         super.onReady();
     }
 
@@ -54,21 +52,21 @@ public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallLi
 
     @Override
     public void onComplete() {
-        serverMetrics.decActiveRequests();
-        super.onComplete();
-        if (Objects.nonNull(start)) {
-            Duration elapsed = Duration.between(start, Instant.now());
-            serverMetrics.markMessageComplete(elapsed, methodDescriptor);
+        try {
+            super.onComplete();
+        } finally {
+            serverMetrics.decActiveRequests();
+            serverMetrics.markMessageComplete(Duration.between(start.get(), Instant.now()), methodDescriptor);
         }
     }
 
     @Override
     public void onCancel() {
-        serverMetrics.decActiveRequests();
-        super.onCancel();
-        if (Objects.nonNull(start)) {
-            Duration elapsed = Duration.between(start, Instant.now());
-            serverMetrics.markMessageCanceled(elapsed, methodDescriptor);
+        try {
+            super.onCancel();
+        } finally {
+            serverMetrics.decActiveRequests();
+            serverMetrics.markMessageCanceled(Duration.between(start.get(), Instant.now()), methodDescriptor);
         }
     }
 }
