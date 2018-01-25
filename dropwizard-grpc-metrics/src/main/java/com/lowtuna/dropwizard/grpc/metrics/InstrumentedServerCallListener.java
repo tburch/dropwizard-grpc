@@ -19,27 +19,55 @@ import io.grpc.ForwardingServerCallListener;
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 
-public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallListener<ReqT> {
-    private final ServerCall.Listener<ReqT> delegate;
-    private final MethodDescriptor.MethodType methodType;
-    private final MetricsContainer metricsContainer;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
 
-    InstrumentedServerCallListener(ServerCall.Listener<ReqT> delegate, MethodDescriptor.MethodType methodType, MetricsContainer metricsContainer) {
-        this.delegate = delegate;
-        this.methodType = methodType;
-        this.metricsContainer = metricsContainer;
+public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
+    private final MethodDescriptor methodDescriptor;
+    private final ServerMetrics serverMetrics;
+
+    private Instant start;
+
+    InstrumentedServerCallListener(ServerCall.Listener<ReqT> delegate, MethodDescriptor methodDescriptor, ServerMetrics serverMetrics) {
+       super(delegate);
+        this.methodDescriptor = methodDescriptor;
+        this.serverMetrics = serverMetrics;
     }
 
     @Override
-    protected ServerCall.Listener<ReqT> delegate() {
-        return delegate;
+    public void onReady() {
+        if (Objects.isNull(start)) {
+            start = Instant.now();
+        }
+        super.onReady();
     }
 
     @Override
     public void onMessage(ReqT request) {
-        if (!methodType.clientSendsOneMessage()) {
-            metricsContainer.getStreamMessagesReceivedMeter().mark();
+        if (!methodDescriptor.getType().clientSendsOneMessage()) {
+            serverMetrics.markMessageReceived(methodDescriptor);
         }
         super.onMessage(request);
+    }
+
+    @Override
+    public void onComplete() {
+        super.onComplete();
+        if (Objects.nonNull(start)) {
+            Duration elapsed = Duration.between(start, Instant.now());
+            serverMetrics.markMessageComplete(elapsed, methodDescriptor);
+        }
+        serverMetrics.decActiveRequests();
+    }
+
+    @Override
+    public void onCancel() {
+        super.onCancel();
+        if (Objects.nonNull(start)) {
+            Duration elapsed = Duration.between(start, Instant.now());
+            serverMetrics.markMessageCanceled(elapsed, methodDescriptor);
+        }
+        serverMetrics.decActiveRequests();
     }
 }

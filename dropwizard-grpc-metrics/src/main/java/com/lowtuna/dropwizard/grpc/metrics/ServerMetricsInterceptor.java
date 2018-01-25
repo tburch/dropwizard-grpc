@@ -15,34 +15,23 @@
  */
 package com.lowtuna.dropwizard.grpc.metrics;
 
-import io.grpc.ForwardingServerCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
-import io.grpc.Status;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
 
-public class InstrumentedServerCall<ReqT, RespT> extends ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT> {
-    private final MethodDescriptor methodDescriptor;
+public class ServerMetricsInterceptor implements ServerInterceptor {
     private final ServerMetrics serverMetrics;
 
-    InstrumentedServerCall(ServerCall<ReqT, RespT> delegate, MethodDescriptor methodDescriptor, ServerMetrics serverMetrics) {
-        super(delegate);
-
-        this.methodDescriptor = methodDescriptor;
+    public ServerMetricsInterceptor(ServerMetrics serverMetrics) {
         this.serverMetrics = serverMetrics;
-
-        serverMetrics.incActiveRequests();
     }
 
     @Override
-    public void close(Status status, Metadata responseHeaders) {
-        super.close(status, responseHeaders);
-        serverMetrics.callClosed(status, methodDescriptor);
-    }
-
-    @Override
-    public void sendMessage(RespT message) {
-        super.sendMessage(message);
-        serverMetrics.messageSent(methodDescriptor);
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        MethodDescriptor methodDescriptor = call.getMethodDescriptor();
+        ServerCall<ReqT, RespT> instrumentedServerCall = new InstrumentedServerCall<>(call, methodDescriptor, serverMetrics);
+        return new InstrumentedServerCallListener<>(next.startCall(instrumentedServerCall, headers), methodDescriptor, serverMetrics);
     }
 }

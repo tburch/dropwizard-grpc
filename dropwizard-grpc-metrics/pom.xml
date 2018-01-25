@@ -10,7 +10,6 @@
         <version>1.1.6-1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.lowtuna.dropwizard.grpc</groupId>
     <artifactId>dropwizard-grpc-metrics</artifactId>
 
     <dependencies>
@@ -25,6 +24,18 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.librato.metrics</groupId>
+            <artifactId>librato-java</artifactId>
+            <version>2.1.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.librato.metrics</groupId>
+            <artifactId>metrics-librato</artifactId>
+            <version>5.1.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

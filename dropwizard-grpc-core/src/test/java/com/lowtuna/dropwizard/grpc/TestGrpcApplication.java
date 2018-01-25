@@ -2,7 +2,8 @@ package com.lowtuna.dropwizard.grpc;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.health.HealthCheck;
-import com.lowtuna.dropwizard.grpc.metrics.MetricsInterceptor;
+import com.lowtuna.dropwizard.grpc.metrics.ServerMetricsInterceptor;
+import com.lowtuna.dropwizard.grpc.metrics.ServerMetricsInterceptorFactory;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 
@@ -19,7 +20,7 @@ public class TestGrpcApplication extends GrpcApplication<TestGrpcApplicationConf
   public void run(TestGrpcApplicationConfiguration configuration, Environment environment, GrpcEnvironment.GrpcEnvironmentBuilder grpcEnvironmentBuilder) throws Exception {
     FooServiceImpl fooService = new FooServiceImpl();
     grpcEnvironmentBuilder.bindableService(fooService);
-    grpcEnvironmentBuilder.interceptor(new MetricsInterceptor(environment.metrics()));
+    grpcEnvironmentBuilder.interceptor(ServerMetricsInterceptorFactory.usingDropwizardMetrics(environment.metrics()));
 
     HealthCheck flappableHealthCheck = new HealthCheck() {
       @Override
