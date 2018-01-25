@@ -39,6 +39,7 @@ public class InstrumentedServerCallListener<ReqT> extends ForwardingServerCallLi
     public void onReady() {
         if (Objects.isNull(start)) {
             start = Instant.now();
+            serverMetrics.incActiveRequests();
         }
         super.onReady();
     }
