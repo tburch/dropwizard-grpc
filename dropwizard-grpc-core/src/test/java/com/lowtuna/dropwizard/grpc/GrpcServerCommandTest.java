@@ -1,6 +1,8 @@
 package com.lowtuna.dropwizard.grpc;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import io.dropwizard.Application;
+import io.dropwizard.Configuration;
 import io.dropwizard.cli.Command;
 import io.dropwizard.logging.ConsoleAppenderFactory;
 import io.dropwizard.logging.DefaultLoggingFactory;
@@ -25,7 +27,7 @@ import java.util.function.Function;
  * Created by tburch on 3/20/17.
  */
 public class GrpcServerCommandTest {
-  private static final int GRPC_PORT = 9000;
+  private static final int GRPC_PORT = 9004;
   private static final ServerFactory SERVER_FACTORY;
   static {
     GrpcServerFactory grpcServerFactory = new GrpcServerFactory();
@@ -50,14 +52,12 @@ public class GrpcServerCommandTest {
   }
 
   @ClassRule
-  public static final DropwizardAppRule<TestGrpcApplicationConfiguration> APP_RULE = new DropwizardAppRule(
+  public static final DropwizardAppRule<TestGrpcApplicationConfiguration> APP_RULE = new DropwizardAppRule<>(
           TestGrpcApplication.class,
           CONFIG,
-          new Function<TestGrpcApplication, Command>() {
-            @Override
-            public Command apply(TestGrpcApplication application) {
-              return new GrpcServerCommand<>(application);
-            }
+          testGrpcApplicationConfigurationApplication -> {
+            TestGrpcApplication application = (TestGrpcApplication) testGrpcApplicationConfigurationApplication;
+            return new GrpcServerCommand<>(application);
           }
   );
 
@@ -74,7 +74,7 @@ public class GrpcServerCommandTest {
   }
 
   @Test
-  public void testFooService() throws InterruptedException {
+  public void testFooService() {
     FooRequest request = FooRequest.newBuilder().setBar("123").build();
     FooResponse response = fooService.doFoo(request);
     Assert.assertTrue(response.getBaz().contains("123"));

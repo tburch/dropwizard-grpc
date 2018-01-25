@@ -84,7 +84,7 @@ class GrpcServer implements Managed {
             serverBuilder.useTransportSecurity(grpcEnvironment.getTlsCertAndPrivateKey().getLeft(), grpcEnvironment.getTlsCertAndPrivateKey().getRight());
         }
 
-        DropwizardHealthCheckService healthCheckService = new DropwizardHealthCheckService(dropwizardEnvironment.healthChecks(), server);
+        DropwizardHealthCheckService healthCheckService = new DropwizardHealthCheckService(dropwizardEnvironment.healthChecks());
         serverBuilder.addService(healthCheckService);
 
         log.info("Starting gRPC server on port {}", port);
