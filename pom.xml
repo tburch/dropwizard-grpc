@@ -186,11 +186,11 @@
             <version>2.5.3</version>
             <configuration>
               <autoVersionSubmodules>true</autoVersionSubmodules>
-              <mavenExecutorId>forked-path</mavenExecutorId>
               <tagNameFormat>v@{project.version}</tagNameFormat>
               <preparationGoals>clean test</preparationGoals>
               <useReleaseProfile>false</useReleaseProfile>
               <scmCommentPrefix>[maven-release-plugin][ci skip] </scmCommentPrefix>
+              <localCheckout>true</localCheckout>
             </configuration>
           </plugin>
           <plugin>
