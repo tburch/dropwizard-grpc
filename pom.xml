@@ -179,6 +179,10 @@
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+              <keyname>B935639800D4871F99EEEBAC455983548A61DA91</keyname>
+            </configuration>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
