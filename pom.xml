@@ -4,6 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <name>Dropwizard gRPC</name>
+  <description>A gRPC server bundle for Dropwizard</description>
+  <url>https://github.com/tburch/dropwizard-grpc</url>
   <groupId>com.lowtuna.dropwizard.grpc</groupId>
   <artifactId>dropwizard-grpc</artifactId>
   <packaging>pom</packaging>
@@ -24,6 +27,11 @@
   </modules>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
     <dep.io.dropwizard.version>1.1.6</dep.io.dropwizard.version>
     <dep.io.grpc.version>1.8.0</dep.io.grpc.version>
     <dep.io.dropwizard.metrics.version>3.2.6</dep.io.dropwizard.metrics.version>
@@ -97,15 +105,15 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/tburch/dropwizard-com.lowtuna.dropwizard.grpc.git</connection>
-    <developerConnection>scm:git:git@github.com:tburch/dropwizard-com.lowtuna.dropwizard.grpc.git</developerConnection>
-    <url>https://github.com/tburch/dropwizard-com.lowtuna.dropwizard.grpc</url>
+    <connection>scm:git:git://github.com/tburch/dropwizard-grpc.git</connection>
+    <developerConnection>scm:git:git@github.com:tburch/dropwizard-grpc.git</developerConnection>
+    <url>https://github.com/tburch/dropwizard-grpc</url>
     <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
     <site>
-      <id>dropwizard-com.lowtuna.dropwizard.grpc</id>
+      <id>dropwizard-grpc</id>
       <url>${project.version}</url>
     </site>
     <snapshotRepository>
@@ -122,12 +130,12 @@
 
   <ciManagement>
     <system>Travis CI</system>
-    <url>https://travis-ci.org/tburch/dropwizard-com.lowtuna.dropwizard.grpc</url>
+    <url>https://travis-ci.org/tburch/dropwizard-grpc</url>
   </ciManagement>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/tburch/dropwizard-com.lowtuna.dropwizard.grpc/issues</url>
+    <url>https://github.com/tburch/dropwizard-grpc/issues</url>
   </issueManagement>
 
   <repositories>
@@ -155,13 +163,7 @@
       </properties>
     </profile>
     <profile>
-      <id>release-sign-artifacts</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
+      <id>release</id>
       <build>
         <plugins>
           <plugin>
@@ -177,77 +179,60 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.5.3</version>
             <configuration>
-              <passphrase>${gpg.passphrase}</passphrase>
-              <keyname>8812F4E9</keyname>
+              <autoVersionSubmodules>true</autoVersionSubmodules>
+              <mavenExecutorId>forked-path</mavenExecutorId>
+              <tagNameFormat>v@{project.version}</tagNameFormat>
+              <preparationGoals>clean test</preparationGoals>
+              <useReleaseProfile>false</useReleaseProfile>
+              <scmCommentPrefix>[maven-release-plugin][ci skip] </scmCommentPrefix>
             </configuration>
           </plugin>
-        </plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.5.1</version>
+            <configuration>
+              <skipDeploy>true</skipDeploy>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.4</version>
+            <configuration>
+              <additionalparam>${javadoc.doclint.none}</additionalparam>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+      </plugins>
       </build>
     </profile>
   </profiles>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.0</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.4</version>
-        <configuration>
-          <additionalparam>${javadoc.doclint.none}</additionalparam>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
-        <configuration>
-          <arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <mavenExecutorId>forked-path</mavenExecutorId>
-          <tagNameFormat>v@{project.version}</tagNameFormat>
-          <preparationGoals>clean test</preparationGoals>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-          <skipDeploy>true</skipDeploy>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

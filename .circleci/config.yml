@@ -1,0 +1,60 @@
+version: 2
+jobs:
+  build-and-test:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+      - run: mvn test
+  release:
+      docker:
+        - image: circleci/openjdk:8-jdk
+      working_directory: ~/repo
+
+      environment:
+        MAVEN_OPTS: -Xmx3200m
+
+      steps:
+        - checkout
+
+        - restore_cache:
+            keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-
+
+        - run: mvn -s .circleci/m2/settings.xml dependency:go-offline
+
+        - save_cache:
+            paths:
+              - ~/.m2
+            key: v1-dependencies-{{ checksum "pom.xml" }}
+
+        - run:
+            shell: /bin/bash
+            command: |
+              if [ "$CIRCLE_BRANCH" == 'master' ]; then
+                if [ ! $(git log --name-status HEAD^..HEAD | grep -q '[ci skip]') ]; then
+                  git config --global user.email "me@tristanburch.com"
+                  git config --global user.name "Tristan Burch"
+                  bash .circleci/release.sh
+                fi
+              fi
