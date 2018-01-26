@@ -25,6 +25,14 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       - run: mvn clean install
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
   release:
       docker:
         - image: circleci/openjdk:8-jdk
