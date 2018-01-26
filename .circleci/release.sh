@@ -7,5 +7,4 @@ mvn -Dgpg.passphrase=${env.GPG.PASSPHRASE} \
 
 mvn -Dgpg.passphrase=${env.GPG.PASSPHRASE} \
     -s .circleci/m2/settings.xml release:perform \
-    --batch-mode \
-    -DlocalCheckout=true
+    --batch-mode
