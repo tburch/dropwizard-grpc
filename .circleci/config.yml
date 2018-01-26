@@ -24,7 +24,7 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      - run: mvn clean test
+      - run: mvn clean install
   release:
       docker:
         - image: circleci/openjdk:8-jdk
