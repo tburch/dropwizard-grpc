@@ -4,7 +4,12 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <servers>
     <server>
-      <id>ossrh</id>
+      <id>sonatype-nexus-snapshots</id>
+      <username>${env.OSSRD_ID}</username>
+      <password>${env.OSSRD_PASSWORD}</password>
+    </server>
+    <server>
+      <id>sonatype-nexus-staging</id>
       <username>${env.OSSRD_ID}</username>
       <password>${env.OSSRD_PASSWORD}</password>
     </server>
